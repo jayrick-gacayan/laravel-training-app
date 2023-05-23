@@ -36,7 +36,7 @@ Route::prefix('email/verify')
     ->controller(VerificationController::class)->group(
         function(){
             Route::get('/', 'viewVerifyEmail')->middleware('auth')->name('notice');
-            Route::get('/{id}/{hash}', 'verify')->middleware(['auth','signed'])->name('verify');
+            Route::get('/{id}/{hash}', 'verify')->middleware('signed')->name('verify');
             Route::get('/resend', 'resend')->name('send');
         }
     );
