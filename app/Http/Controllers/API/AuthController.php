@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
 use Auth;
 
 class AuthController extends Controller
@@ -19,7 +21,7 @@ class AuthController extends Controller
     public function userLogin(Request $request): Response{
         
         $validator = Validator::make($request->all(), [
-            'email' => 'required|max:255',
+            'email' => 'required|email|max:255',
             'password' => 'required',
         ]);
         
@@ -47,11 +49,30 @@ class AuthController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function userRegister(){
+    public function userRegister(Request $request){
         $validator = Validator::make($request->all(), [
-            'email' => 'required|max:255|unique:users',
+            'name' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
             'password' => 'required|max:8'
         ]);
+
+        if(!$validator->fails()){
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password'))
+            ]);
+
+            if($user){
+                event(new Registered($user));
+                $user->sendEmailVerificationNotification();
+                return Response(['user' => $user, 'message' => 'Send email verification.'], 200);
+            }
+
+            return Response(['error' => 'Something went wrong.']);
+        }
+
+        return Response($validator->errors(), 400);
     }
 
     /**
@@ -60,7 +81,14 @@ class AuthController extends Controller
      * @return Illuminate/Http/Response
      */
     public function userLogout(): Response{
-        Auth::user()->token()->revoke();
-        return Response(["message" => 'Successfully logout.'], 200);
+        if(Auth::guard('api')->check())
+        {   
+            $accessToken = Auth::guard('api')->user()->token();
+
+            $accessToken->revoke();
+            return Response(["message" => 'Successfully logout.'], 200);
+        }
+        
+        return Response(["message" => 'Unauthorized.'], 400);
     }
 }
