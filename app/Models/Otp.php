@@ -16,6 +16,17 @@ class Otp extends Model
      */
     protected $fillable = [
         'code',
+        'user_id',
+        'expired_at'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'expired_at' => 'datetime',
     ];
 
     /**

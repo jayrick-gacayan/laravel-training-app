@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('otps', function (Blueprint $table) {
             $table->id();
             $table->string('code');
-            $table->integer('user_id')
-                ->foreign('user_id')
+            $table->timestamp('expired_at')->nullable();
+            $table->bigInteger('user_id')->index();
+            $table->foreign('user_id')
                 ->references('id')
-                ->on('users');
+                ->on('users')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +29,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $table->dropForeign('user_id');
+        $table->dropIndex('user_id');
+        $table->dropColumn('user_id');
         Schema::dropIfExists('otps');
     }
 };

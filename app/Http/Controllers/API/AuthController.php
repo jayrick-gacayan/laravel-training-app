@@ -3,13 +3,19 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+
+use App\Mail\EmailVerifyOTP;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Otp;
+
+use Mail;
 
 class AuthController extends Controller
 {
@@ -26,11 +32,24 @@ class AuthController extends Controller
         ]);
         
         if(!$validator->fails()){
+            $user = User::where('email', $request->input('email'));
+
+            if(!$user->exists()){
+                return Response(['message' => 'User not found.'], 404);
+            }
+
             if(!Auth::attempt($request->all())){
-                return Response(['error' => 'Email and password did not match.'], 401);
+                return Response(['message' => 'Email and password did not match.'], 401);
             }
             else{
                 $user = Auth::user();
+
+                if(!$user->hasVerifiedEmail()){
+                    return Response([
+                            'message' => 'Email is not yet verified. Please check your email address to verify.'
+                        ], 400);
+                }
+
                 $token = $user->createToken('training')->accessToken;
                 
                 return Response([
@@ -50,29 +69,49 @@ class AuthController extends Controller
      * @return Illuminate\Http\Response
      */
     public function userRegister(Request $request){
-        $validator = Validator::make($request->all(), [
+        $validatedData =  Validator::make($request->all(),[
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|max:8'
         ]);
 
-        if(!$validator->fails()){
+        if(!$validatedData->fails()){
+            
             $user = User::create([
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password'))
             ]);
 
-            if($user){
+            if($user !== null){
+                $user->update(['email_verified_at' => null]);
+               
+                $otp = Otp::create([
+                    'code' => rand(100000, 999999),
+                    'user_id' => $user->id,
+                    'expired_at' => now()->addMinutes(15)
+                ]);
+
                 event(new Registered($user));
-                $user->sendEmailVerificationNotification();
-                return Response(['user' => $user, 'message' => 'Send email verification.'], 200);
+                
+                $hash = sha1($user->getEmailForVerification());
+
+                try{
+                    Mail::to($user->email)->send(new EmailVerifyOTP($otp->code, $user->name, $user->email));
+                    return Response([
+                            'user' => $user, 
+                            'message' => 'Successfully send OTP for email verification.', 
+                            'hash' => $hash ], 
+                        200);
+                }catch(Exception $e){
+                    return Response(['message' => 'Something went wrong. Please try again.'], 300);
+                }
             }
 
             return Response(['error' => 'Something went wrong.']);
         }
 
-        return Response($validator->errors(), 400);
+        return Response($validatedData->errors(), 400);
     }
 
     /**
@@ -83,9 +122,10 @@ class AuthController extends Controller
     public function userLogout(): Response{
         if(Auth::guard('api')->check())
         {   
-            $accessToken = Auth::guard('api')->user()->token();
+            $user = Auth::guard('api')->user();
+            
+            $user->token()->revoke()->logout();
 
-            $accessToken->revoke();
             return Response(["message" => 'Successfully logout.'], 200);
         }
         

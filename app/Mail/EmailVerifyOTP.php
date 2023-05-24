@@ -8,8 +8,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Address;
 
-class EmailVerify extends Mailable
+class EmailVerifyOTP extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -34,7 +35,8 @@ class EmailVerify extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email Verify',
+            from: new Address('noreply@trainingapp.com', 'Test Sender'),
+            subject: 'Email Verify through OTP',
         );
     }
 
@@ -44,7 +46,11 @@ class EmailVerify extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'email.register_otp_code',
+            view: 'emails.verify_otp_code',
+            with: [
+                'code' => $this->code,
+                'name' => $this->name
+            ]
         );
     }
 

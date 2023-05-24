@@ -18,6 +18,8 @@ class VerificationController extends Controller
      * @return Illuminate\Http\Response
      */
     public function verify($user_id, $hash, Request $request){
+
+        
         if (!$request->hasValidSignature()) {
             return response()->json(['msg' => 'Invalid/Expired url provided.'], 401);
         }

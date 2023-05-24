@@ -43,4 +43,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Get all of the comments for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function otpFirst(): HasMany
+    {
+        return $this->hasMany(Otp::class, 'user_id', 'id')->first();
+    }
 }

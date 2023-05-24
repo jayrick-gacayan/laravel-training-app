@@ -7,8 +7,9 @@
     <title>Email Verification By OTP</title>
   </head>
   <body>
-    <h1>Hi! {{ $name }}</h1>
-    <h1>Thanks for registering with us.</h1>
+    <p className="text-center text-3xl">{{ $name }}</p>
+    <p>Thanks for registering with us.</p>
     <h1 class="text-6xl text-center">{{ $code }}</h1>
+    <p>Use this to verify your email address.</p>
   </body>
   </html>
