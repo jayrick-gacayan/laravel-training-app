@@ -5,32 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Otp extends Model
+class Post extends Model
 {
     use HasFactory;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
-        'code',
-        'user_id',
-        'expired_at'
+        'title', 'description', 'user_id'
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'expired_at' => 'datetime',
-    ];
-
-    /**
-     * Get the user that owns the otp
+     * Get the posted by
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -38,5 +27,4 @@ class Otp extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
-
 }

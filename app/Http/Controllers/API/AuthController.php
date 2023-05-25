@@ -131,4 +131,8 @@ class AuthController extends Controller
         
         return Response(["message" => 'Unauthorized.'], 400);
     }
+
+    public function forgotPassword(Request $request){
+        
+    }
 }

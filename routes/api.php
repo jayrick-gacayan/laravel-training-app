@@ -3,8 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\VerificationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -35,8 +33,10 @@ Route::prefix('email/verify')
     ->name('verification.')
     ->controller(VerificationController::class)->group(
         function(){
+            Route::get('/resend', 'resend')->name('resend');
             Route::get('/', 'viewVerifyEmail')->middleware('auth:api')->name('notice');
-            Route::get('/{id}/{hash}', 'verify')->middleware('auth:api')->name('verify');
-            Route::get('/resend', 'resend')->name('send');
+            Route::get('/{id}', 'verify')->name('verify');
         }
     );
+
+Route::resource('products', ProductController::class, ["except"=> ['create', 'edit']]);

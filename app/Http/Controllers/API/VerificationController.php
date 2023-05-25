@@ -17,19 +17,26 @@ class VerificationController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function verify($user_id, $hash, Request $request){
+    public function verify($user_id, Request $request){
+        $user = User::find($user_id);
 
+        if(is_null($user)){
+            return Response(['message' => 'User not found'],404);
+        }
         
-        if (!$request->hasValidSignature()) {
-            return response()->json(['msg' => 'Invalid/Expired url provided.'], 401);
+        if($user->hasVerifiedEmail()){
+            return Response(['message' => 'Email has been already verified.'], 300);
         }
 
-        $user = User::findOrFail($user_id);
+        $otp = $user->otp()->first();
+        
+        if($otp->expired_at->gt(now())){
+            return Response(['message' => 'OTP code is expired.'],200);
+        }
 
-        // dd($user);
-        abort_if(!$user, 404); // user not found;
-        // abort_if(!hash_equals(sha1($user->getEmailForVerification()), $hash),403);
-
+        if($otp->code !== $request->input('code')){
+            return Response([ 'message' => 'OTP did not match.'],401);
+        }
 
         if(!$user->hasVerifiedEmail()){
             $user->update(['is_email_verified' => true]);
@@ -38,7 +45,7 @@ class VerificationController extends Controller
             return Response(['message' => 'Email is successfully verified.'], 200);
         }
 
-        return Response(['message' => 'Email is already verified'], 300);
+        return Response(['message' => 'Something went wrong.'], 500);
     }
 
     /**
@@ -47,12 +54,14 @@ class VerificationController extends Controller
      * @return Illuminate\Http\Response
      */
     public function resend(Request $request){
-        if($request->user()->hasVerifiedEmail() !== null){
-            return Response(['message'=> 'Email is already verified.'], 300);
-        }
+        
+        dd($request->user()->hasVerifiedEmail());
+        // if($request->user()->hasVerifiedEmail()){
+        //     return Response(['message'=> 'Email is already verified.'], 300);
+        // }
 
-        auth()->user()->sendEmailVerificationNotification();
-        return Response(['message'=> 'Email verification link is sent on your email id.'], 200);
+        // auth()->user()->sendEmailVerificationNotification();
+        // return Response(['message'=> 'Email verification link is sent on your email id.'], 200);
     }
 
     public function viewVerifyEmail(){
