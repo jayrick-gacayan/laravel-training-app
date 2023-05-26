@@ -29,9 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $table->dropForeign('user_id');
-        $table->dropIndex('user_id');
-        $table->dropColumn('user_id');
         Schema::dropIfExists('otps');
     }
 };

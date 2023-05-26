@@ -35,7 +35,6 @@ class EmailVerifyOTP extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new Address('noreply@trainingapp.com', 'Test Sender'),
             subject: 'Email Verify through OTP',
         );
     }

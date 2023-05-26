@@ -16,6 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->float('price');
+            $table->bigInteger('user_id')->index();
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

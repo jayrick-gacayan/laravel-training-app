@@ -30,9 +30,9 @@ class VerificationController extends Controller
 
         $otp = $user->otp()->first();
         
-        if($otp->expired_at->gt(now())){
-            return Response(['message' => 'OTP code is expired.'],200);
-        }
+        // if($otp->expired_at->gt(now())){
+        //     return Response(['message' => 'OTP code is expired.'],200);
+        // }
 
         if($otp->code !== $request->input('code')){
             return Response([ 'message' => 'OTP did not match.'],401);

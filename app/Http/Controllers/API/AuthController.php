@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Auth;
+use Auth;
 
 use App\Mail\EmailVerifyOTP;
 use Carbon\Carbon;
@@ -124,7 +124,7 @@ class AuthController extends Controller
         {   
             $user = Auth::guard('api')->user();
             
-            $user->token()->revoke()->logout();
+            $user->token()->revoke();
 
             return Response(["message" => 'Successfully logout.'], 200);
         }

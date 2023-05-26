@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -12,15 +11,7 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    /**
-    * Constructor.
-    *
-    * @return void
-    */
-    public function __construct()
-    {
-        $this->middleware('auth:api')->except(['index', 'show']);
-    }
+    //
 
     /**
      * Display a listing of the resource.
@@ -45,18 +36,19 @@ class ProductController extends Controller
         //
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
-            'detail' => 'required|max:255',
-            'price' => 'required|decimal'
+            'description' => 'required|max:255',
+            'price' => 'required|numeric'
         ]);
    
         if($validator->fails()){
-            return Response($validatedData->errors(), 400); 
+            return Response($validator->errors(), 400); 
         }
         
         $product = Product::create([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
-            'price' => $request->input('price')
+            'price' => $request->input('price'),
+            'user_id' => auth()->user()->id
         ]);
 
 
@@ -71,14 +63,8 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function show(string $id)
+    public function show(Product $product)
     {
-        //
-        $product = Product::find($id);
-
-        if(is_null($product)){
-          return Response(['message' => 'Product not found'],404);
-        }
         return Response(['product' => $product],200);
     }
 
@@ -114,11 +100,10 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function destroy(Product $product)
+    public function destroy(string $id)
     {
-        //
-        $deleteProduct = $product->delete();
-
-        return Response(['product' => $deleteProduct, 'message', 'Product deleted successfully'],200);
+        $product = Product::destroy($id);
+        
+        return Response(['message', 'Product deleted successfully'],200);
     }
 }
