@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Auth\Events\Verified;
 // use Illuminate\Foundation\Auth\EmailVerificationRequest as EmailRequest;
 use App\Models\User;
-use Auth;
 
 class VerificationController extends Controller
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -24,6 +24,15 @@ class ProductController extends Controller
         $products = Product::all();
 
         return Response(['products' => $products],200);
+    }
+
+    /**
+     * 
+     * 
+     * 
+     */
+    public function create(){
+        return view('products.create');
     }
 
     /**
@@ -63,9 +72,10 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show(string $id)
     {
-        return Response(['product' => $product],200);
+        return Response(['product'=> Product::find($id)], 200);
+        // return Response(['product' => $product],200);
     }
 
     /**
@@ -73,19 +83,20 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(string $id, Request $request)
     {
-        //
+        
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'detail' => 'required|max:255',
             'price' => 'required|decimal'
         ]);
-   
+        
         if($validator->fails()){
-            return Response($validatedData->errors(), 400); 
+            return Response($validator->errors(), 400); 
         }
 
+        $product = Product::find($id);
         $product->update([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
@@ -102,8 +113,9 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        $product = Product::destroy($id);
+       
+        Product::destroy($id);
         
-        return Response(['message', 'Product deleted successfully'],200);
+        return Response(['message' =>'Product deleted successfully'],200);
     }
 }

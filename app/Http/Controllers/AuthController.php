@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,13 +8,14 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-use Auth;
 
 use App\Mail\EmailVerifyOTP;
-use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Otp;
 
+use Twilio\Rest\Client;
+
+use Auth;
 use Mail;
 
 class AuthController extends Controller
@@ -134,5 +135,22 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request){
         
+    }
+
+    public function testTwilio(){
+        
+        $twilioConfig = config('services.twilio');
+        $twilio = new Client($twilioConfig['sid'], $twilioConfig['token']);
+
+        $verification = $twilio->verify
+                            ->v2
+                            ->services($twilioConfig['verify_sid'])
+                            ->verifications
+                            ->create("rick24jay0988@gmail.com", "email");
+
+
+
+        dd($verification);
+        // return Response(['sid' => $twilio_sid], 200);
     }
 }
