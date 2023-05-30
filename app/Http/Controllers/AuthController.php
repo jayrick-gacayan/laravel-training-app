@@ -140,17 +140,18 @@ class AuthController extends Controller
     public function testTwilio(){
         
         $twilioConfig = config('services.twilio');
-        $twilio = new Client($twilioConfig['sid'], $twilioConfig['token']);
+        
+        try{
+            $twilio = new Client($twilioConfig['sid'], $twilioConfig['token']);
 
-        $verification = $twilio->verify
-                            ->v2
-                            ->services($twilioConfig['verify_sid'])
-                            ->verifications
-                            ->create("rick24jay0988@gmail.com", "email");
-
-
-
-        dd($verification);
-        // return Response(['sid' => $twilio_sid], 200);
+            $verification = $twilio->verify
+                                ->v2
+                                ->services($twilioConfig['verify_sid'])
+                                ->verifications
+                                ->create("jirk24cay0988@gmail.com", "email");
+          return Response(['message' => 'Successfully send OTP throught email.'], 200);
+        }catch(Exception $e){
+          return Response(['message' => 'Something went wrong.'], 500);
+        }
     }
 }
