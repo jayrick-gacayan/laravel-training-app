@@ -64,6 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function posts() : HasMany{
         return $this->hasMany(Post::class, 'user_id', 'id');
     }
+    
 
     /**
      * send email otp

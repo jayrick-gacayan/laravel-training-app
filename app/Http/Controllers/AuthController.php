@@ -25,7 +25,7 @@ class AuthController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function userLogin(Request $request): Response{
+    public function login(Request $request): Response{
         
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255',
@@ -44,7 +44,7 @@ class AuthController extends Controller
             }
             else{
                 $user = Auth::user();
-
+                
                 if(!$user->hasVerifiedEmail()){
                     return Response([
                             'message' => 'Email is not yet verified. Please check your email address to verify.'
@@ -69,7 +69,7 @@ class AuthController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function userRegister(Request $request){
+    public function register(Request $request){
         $validatedData =  Validator::make($request->all(),[
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
@@ -120,7 +120,7 @@ class AuthController extends Controller
      * 
      * @return Illuminate/Http/Response
      */
-    public function userLogout(): Response{
+    public function logout(): Response{
         if(Auth::guard('api')->check())
         {   
             $user = Auth::guard('api')->user();

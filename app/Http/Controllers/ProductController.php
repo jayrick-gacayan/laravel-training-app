@@ -53,6 +53,7 @@ class ProductController extends Controller
             return Response($validator->errors(), 400); 
         }
         
+        // dd(auth()->user()->id);
         $product = Product::create([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
@@ -72,10 +73,9 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function show(string $id)
+    public function show(Product $product)
     {
-        return Response(['product'=> Product::find($id)], 200);
-        // return Response(['product' => $product],200);
+        return Response(['product' => $product], 200);
     }
 
     /**
@@ -83,7 +83,7 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function update(string $id, Request $request)
+    public function update(Product $product, Request $request)
     {
         
         $validator = Validator::make($request->all(), [
@@ -96,7 +96,6 @@ class ProductController extends Controller
             return Response($validator->errors(), 400); 
         }
 
-        $product = Product::find($id);
         $product->update([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
@@ -111,7 +110,7 @@ class ProductController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
        
         Product::destroy($id);

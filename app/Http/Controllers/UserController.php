@@ -4,25 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * 
+     * @return Illuminate\Http\Response
      */
     public function index()
     {
         //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        $users = User::all();
+        return Response([
+            'users' => $users
+        ],200);
     }
 
     /**
@@ -31,6 +29,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         //
+        return Response(['user' => $user], 200);
     }
 
     /**

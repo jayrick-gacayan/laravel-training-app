@@ -15,16 +15,17 @@ class NotFound
      */
     public function handle(Request $request, Closure $next, $model)
     {  
-        $modelName = $request->route()->parameterNames[0];
+        dd($request->route('user'));
+        // $modelName = $request->route()->parameterNames[0];
         
-        $tempModel = app($model)->find($request->route()->parameters[$modelName]);
+        // $tempModel = app($model)->find($request->route()->parameters[$modelName]);
 
-        $asRoute = $request->route()->action["as"];
+        // $asRoute = $request->route()->action["as"];
         
-        if(is_null($tempModel)){
-            return Response(['message' => ucfirst(substr($asRoute,0, strlen($asRoute) - 2)).' not found.'], 404);
-        }
+        // if(is_null($tempModel)){
+        //     return Response(['message' => ucfirst(substr($asRoute,0, strlen($asRoute) - 2)).' not found.'], 404);
+        // }
 
-        return $next($request);
+        // return $next($request);
     }
 }

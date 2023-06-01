@@ -23,9 +23,9 @@ Route::controller(AuthController::class)
         ->as('auth.')
         ->group(
             function(){
-                Route::post('login','userLogin')->middleware('guest');
-                Route::post('logout', 'userLogout')->middleware('auth:api');
-                Route::post('register','userRegister')->middleware('guest');
+                Route::post('logout', 'logout')->middleware('auth:api');
+                Route::post('login','login');
+                Route::post('register','register');
                 Route::get('/testTwilio', 'testTwilio');
             }
         );
@@ -41,6 +41,43 @@ Route::prefix('email/verify')
         }
     );
 
+Route::prefix('users')
+    ->name('users.')
+    ->group(
+        function(){
+            Route::controller(UserController::class)
+                ->group(function(){
+                Route::get('/', 'index');
+                Route::get('/{user}', 'show');
+            });
+            
+            // Route::controller(ProductController::class)
+            //     ->middleware(['auth:api','not.found:'.Product::class, 'not.allowed:'.Product::class])
+            //     ->group(function(){
+            //         Route::delete('/{id}', 'destroy');
+            //         Route::put('/{id}', 'update');
+            //     });
+        });
+
+
+Route::prefix('posts')
+    ->name('posts.')
+    ->group(
+        function(){
+            Route::controller(PostController::class)
+                ->group(function(){
+                Route::get('/', 'index');
+                Route::get('/{product}', 'show');
+                Route::post('/', 'store')->middleware('auth:api');
+            });
+            
+            // Route::controller(ProductController::class)
+            //     ->middleware(['auth:api','not.found:'.Product::class, 'not.allowed:'.Product::class])
+            //     ->group(function(){
+            //         Route::delete('/{id}', 'destroy');
+            //         Route::put('/{id}', 'update');
+            //     });
+        });
 
 Route::prefix('products')
     ->name('products.')
@@ -49,16 +86,15 @@ Route::prefix('products')
             Route::controller(ProductController::class)
                 ->group(function(){
                 Route::get('/', 'index');
-                Route::get('/{id}', 'show')->middleware('not.found:'.Product::class);
+                Route::get('/{product}', 'show');
                 Route::post('/', 'store')->middleware('auth:api');
             });
             
             Route::controller(ProductController::class)
-                ->middleware(['auth:api','not.found:'.Product::class, 'not.allowed:'.Product::class])
+                ->middleware(['auth:api', 'not.allowed:'.Product::class])
                 ->group(function(){
-                    Route::delete('/{id}', 'destroy');
-                    Route::put('/{id}', 'update');
+                    Route::delete('/{product}', 'destroy');
+                    Route::put('/{product}', 'update');
                 });
         });
 
-// Route::resource('products', ProductController::class, ["except"=> ['create', 'edit']]);

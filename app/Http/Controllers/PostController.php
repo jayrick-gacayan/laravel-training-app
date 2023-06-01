@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
+
+use Illuminate\Http\Response;
 
 class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * 
+     * @return Illuminate\Http\Response
      */
     public function index()
     {
@@ -20,24 +27,37 @@ class PostController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * 
+     * @return Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|max:255',
+            'description' => 'required|max:255'
+        ]);
+   
+        if($validator->fails()){
+            return Response($validator->errors(), 400); 
+        }
+
+        $post = auth()->user()->posts()->create([
+            "title" => $request->input('title'),
+            'description'=> $request->input('description')
+        ]);
+
+        return Response([
+            'post' => $post, 
+            'message'=> 'Post successfully created'],
+        200);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Post $post)
     {
-        //
-        $post = Post::find($id);
-
-        if(is_null($post)){
-            return Response(['message' => 'Post not found.'], 404);
-        }
-
         return Response(['post' => $post], 200);
     }
 
