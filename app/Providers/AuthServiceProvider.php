@@ -6,6 +6,9 @@ namespace App\Providers;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Passport\Passport;
 
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
+
 class AuthServiceProvider extends ServiceProvider
 {
     /**
@@ -26,5 +29,13 @@ class AuthServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
+            dd('', $notifiable);
+            return (new MailMessage)
+                ->view('emails.verify_otp_code', ['code' => '347589', 'name' => 'Jayrick Gacayan'])
+                ->subject('Verify Email Address')
+                ->line('Click the button below to verify your email address.');
+        });
     }
 }

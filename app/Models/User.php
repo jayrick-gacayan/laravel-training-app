@@ -24,6 +24,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'username',
+        'photo',
+        'phone',
+        'address',
+        'role',
+        'status',
         'is_email_verified'
     ];
 
@@ -52,7 +58,8 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @return Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function otp() : HasMany{
+    public function otp(): HasMany
+    {
         return $this->hasMany(Otp::class, 'user_id', 'id');
     }
 
@@ -61,17 +68,18 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function posts() : HasMany{
+    public function posts(): HasMany
+    {
         return $this->hasMany(Post::class, 'user_id', 'id');
     }
-    
+
 
     /**
      * send email otp
      * 
      * @return void
      */
-    public function sendOtpNotification(){
-        
+    public function sendOtpNotification()
+    {
     }
 }
