@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -15,8 +16,9 @@ use App\Models\Otp;
 
 use Twilio\Rest\Client;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Mail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class AuthController extends Controller
 {
@@ -25,43 +27,42 @@ class AuthController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function login(Request $request): Response{
-        
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|max:255',
-            'password' => 'required',
-        ]);
-        
-        if(!$validator->fails()){
-            $user = User::where('email', $request->input('email'));
+    public function login(UserRequest $request)
+    {
+        $validated = $request->only(['email', 'password']);
 
-            if(!$user->exists()){
-                return Response(['message' => 'User not found.'], 404);
-            }
+        $user = User::where('email', $validated['email']);
 
-            if(!Auth::attempt($request->all())){
-                return Response(['message' => 'Email and password did not match.'], 401);
-            }
-            else{
-                $user = Auth::user();
-                
-                if(!$user->hasVerifiedEmail()){
-                    return Response([
-                            'message' => 'Email is not yet verified. Please check your email address to verify.'
-                        ], 400);
-                }
-
-                $token = $user->createToken('training')->accessToken;
-                
-                return Response([
-                        'user' => $user,
-                        'message'=> 'Successfully login.', 
-                        'access_token' => $token], 
-                    200);    
-            }
+        if (!$user->exists()) {
+            return Response(['message' => 'User not found.'], 404);
         }
-        
-        return Response($validator->errors(), 400);
+
+        if (!Auth::validate($validated)) {
+            return Response(['message' => 'Email and password did not match.'], 401);
+        } else {
+            $authUser = Auth::getProvider()->retrieveByCredentials($validated);
+            Auth::setUser($authUser);
+
+
+            if (!auth()->user()->hasVerifiedEmail()) {
+                return Response([
+                    'message' => 'Email is not yet verified. Please check your email address to verify.'
+                ], 400);
+            }
+
+            $user = Auth::user();
+            $token = $user->createToken('training')->accessToken;
+            Auth::login($user);
+
+            return Response(
+                [
+                    'user' => $user,
+                    'message' => 'Successfully login.',
+                    'access_token' => $token
+                ],
+                200
+            );
+        }
     }
 
     /**
@@ -69,24 +70,25 @@ class AuthController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function register(Request $request){
-        $validatedData =  Validator::make($request->all(),[
+    public function register(Request $request)
+    {
+        $validatedData =  Validator::make($request->all(), [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|max:8'
         ]);
 
-        if(!$validatedData->fails()){
-            
+        if (!$validatedData->fails()) {
+
             $user = User::create([
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password'))
             ]);
 
-            if($user !== null){
+            if ($user !== null) {
                 $user->update(['email_verified_at' => null]);
-               
+
                 $otp = Otp::create([
                     'code' => rand(100000, 999999),
                     'user_id' => $user->id,
@@ -94,17 +96,20 @@ class AuthController extends Controller
                 ]);
 
                 event(new Registered($user));
-                
+
                 $hash = sha1($user->getEmailForVerification());
 
-                try{
+                try {
                     Mail::to($user->email)->send(new EmailVerifyOTP($otp->code, $user->name, $user->email));
-                    return Response([
-                            'user' => $user, 
-                            'message' => 'Successfully send OTP for email verification.', 
-                            'hash' => $hash ], 
-                        200);
-                }catch(Exception $e){
+                    return Response(
+                        [
+                            'user' => $user,
+                            'message' => 'Successfully send OTP for email verification.',
+                            'hash' => $hash
+                        ],
+                        200
+                    );
+                } catch (Exception $e) {
                     return Response(['message' => 'Something went wrong. Please try again.'], 300);
                 }
             }
@@ -120,38 +125,39 @@ class AuthController extends Controller
      * 
      * @return Illuminate/Http/Response
      */
-    public function logout(): Response{
-        if(Auth::guard('api')->check())
-        {   
+    public function logout(): Response
+    {
+        if (Auth::guard('api')->check()) {
             $user = Auth::guard('api')->user();
-            
+
             $user->token()->revoke();
 
             return Response(["message" => 'Successfully logout.'], 200);
         }
-        
+
         return Response(["message" => 'Unauthorized.'], 400);
     }
 
-    public function forgotPassword(Request $request){
-        
+    public function forgotPassword(Request $request)
+    {
     }
 
-    public function testTwilio(){
-        
+    public function testTwilio()
+    {
+
         $twilioConfig = config('services.twilio');
-        
-        try{
+
+        try {
             $twilio = new Client($twilioConfig['sid'], $twilioConfig['token']);
 
             $verification = $twilio->verify
-                                ->v2
-                                ->services($twilioConfig['verify_sid'])
-                                ->verifications
-                                ->create("jirk24cay0988@gmail.com", "email");
-          return Response(['message' => 'Successfully send OTP throught email.'], 200);
-        }catch(Exception $e){
-          return Response(['message' => 'Something went wrong.'], 500);
+                ->v2
+                ->services($twilioConfig['verify_sid'])
+                ->verifications
+                ->create("jirk24cay0988@gmail.com", "email");
+            return Response(['message' => 'Successfully send OTP throught email.'], 200);
+        } catch (Exception $e) {
+            return Response(['message' => 'Something went wrong.'], 500);
         }
     }
 }

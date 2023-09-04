@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\User as ResourcesUser;
 use App\Models\User;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
@@ -16,11 +17,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
-        $users = User::all();
         return Response([
-            'users' => $users
-        ],200);
+            'users' => new ResourcesUser(User::all())
+        ], 200);
     }
 
     /**
@@ -29,7 +28,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         //
-        return Response(['user' => $user], 200);
+        return Response(['user' => new ResourcesUser($user)], 200);
     }
 
     /**

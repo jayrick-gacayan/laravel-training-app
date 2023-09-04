@@ -17,14 +17,27 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        $guards = empty($guards) ? [null] : $guards;
 
-        foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+        //dd(Auth::user());
+        if ($request->is('api/*')) {
+            if (Auth::guard('api')->check()) {
+                Response(['message' => 'Unauthorized'], 401);
             }
         }
 
         return $next($request);
+
+        // $guards = empty($guards) ? [null] : $guards;
+
+        // foreach ($guards as $guard) {
+
+        //     if (Auth::guard($guard)->check()) {
+        //         return $guard == 'api' ?
+        //             Response(['message' => 'Unauthorized'], 401) :
+        //             redirect(RouteServiceProvider::HOME);
+        //     }
+        // }
+
+
     }
 }
